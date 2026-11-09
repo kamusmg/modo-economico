@@ -34,11 +34,13 @@ flowchart LR
 
 ## Instalar
 
-Baixe este repositório (**Code → Download ZIP** ou `git clone`) e, dentro da pasta:
-
 ```bash
+git clone https://github.com/kamusmg/modo-economico
+cd modo-economico
 python instalar.py claude      # ou: opencode, codex
 ```
+
+Sem git, use **Code → Download ZIP** e rode só a última linha dentro da pasta.
 
 Depois abra a ferramenta e ligue o modo:
 
