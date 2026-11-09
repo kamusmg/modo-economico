@@ -2,61 +2,87 @@
 
 # Modo Econômico
 
-**Uma conversa decide, as outras executam. Cada papel roda no modelo que você escolher, inclusive local.**
+**One conversation decides, the others execute. Each role runs on the model you choose, including local ones.**
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776ab?logo=python&logoColor=white)
-![Dependências](https://img.shields.io/badge/depend%C3%AAncias-0-brightgreen)
-![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-yellow)
+![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-yellow)
+
+**English** · [Português](README.pt-BR.md)
 
 </div>
 
-Tudo que entra na conversa principal de um agente de código é relido a cada turno. Depois de algumas buscas e alguns arquivos abertos, ele gasta contexto e cota com material que não ajuda a decidir.
+Everything that enters a coding agent's main conversation is reread on every turn. After a few searches and opened files, it spends context and quota on material that does not help it decide.
 
-Quem decide não precisa ver o trabalho braçal, só o resultado. O `/economico` transforma a conversa em tech lead: ela decide, escreve a spec e revisa. O resto vai para subagentes com contexto próprio, em paralelo, e só o resumo volta.
+Whoever decides does not need to see the legwork, only the result. "Modo Econômico" (Portuguese for *economy mode*) turns the conversation into a tech lead: it decides, writes the spec, and reviews. Everything else goes to subagents with their own context, in parallel, and only the summary comes back.
 
 ```mermaid
 flowchart LR
-    V([Você]) <--> L["Tech lead<br/>conversa principal"]
-    L -- spec --> E["executor<br/>faz e testa"]
-    L -- pergunta --> S["search<br/>acha, só lê"]
-    E -- resumo --> L
-    E -- trabalho grande --> R["revisor<br/>confere, só lê"]
-    R -- aprovado ou volta --> L
-    S -- arquivo:linha --> L
+    V([You]) <--> L["Tech lead<br/>main conversation"]
+    L -- spec --> E["executor<br/>does and tests"]
+    L -- question --> S["search<br/>finds, read-only"]
+    E -- summary --> L
+    E -- large work --> R["reviewer<br/>checks, read-only"]
+    R -- approved or sent back --> L
+    S -- file:line --> L
 ```
 
-| Papel | O que faz | Edita arquivo? | Padrão no Claude Code |
+| Role | What it does | Edits files? | Plugin default (Claude Code) |
 |---|---|---|---|
-| Tech lead (a conversa) | Decide, escreve a spec, revisa, faz o que exige gosto | Sim | O modelo que você abrir |
-| `executor` | Aplica o que já foi decidido e testa | Sim | `opus`, esforço `max` |
-| `revisor` | Confere trabalho grande contra a spec | Não | `opus`, esforço `max` |
-| `search` | Acha onde está cada coisa | Não | `sonnet` |
+| Tech lead (the conversation) | Decides, writes the spec, reviews, does anything that takes taste | Yes | Whichever model you open |
+| `executor` | Applies what was decided and tests it | Yes | `sonnet` |
+| `reviewer` | Checks large work against the spec | No | `sonnet` |
+| `search` | Finds where things are | No | `haiku` |
 
-## Instalar
+## Install
+
+### Claude Code plugin
+
+No Python needed. Inside Claude Code:
+
+```text
+/plugin install modo-economico --marketplace kamusmg/modo-economico
+```
+
+From a terminal:
+
+```bash
+claude plugin marketplace add kamusmg/modo-economico
+claude plugin install modo-economico@modo-economico
+```
+
+Then turn it on and off in any conversation:
+
+| Action | Command |
+|---|---|
+| On | `/modo-economico:on` |
+| Off | `/modo-economico:off` |
+
+To update: `claude plugin update modo-economico@modo-economico`. To remove: `claude plugin uninstall modo-economico@modo-economico`.
+
+The plugin's models are fixed. To choose your own, or to use OpenCode or Codex, use the installer. Do not install both in Claude Code.
+
+### Installer: choose your models, or use OpenCode or Codex
 
 ```bash
 git clone https://github.com/kamusmg/modo-economico
 cd modo-economico
-python instalar.py claude      # ou: opencode, codex
+python instalar.py claude      # or: opencode, codex
 ```
 
-Sem git, use **Code → Download ZIP** e rode só a última linha dentro da pasta.
-
-Depois abra a ferramenta e ligue o modo:
-
-| Ferramenta | Liga | Desliga |
+| Tool | On | Off |
 |---|---|---|
 | Claude Code | `/economico` | `/normal` |
 | OpenCode | `/economico` | `/normal` |
 | Codex | `$economico` | `$normal` |
 
-Se você já tiver um arquivo com o mesmo nome, o instalador guarda o seu como `.bak-<data>` antes de escrever. Precisa de Python 3.9 ou mais novo, sem nenhuma dependência. Sem Python, peça para a própria IA: "leia este README e instale para mim".
+The installer needs Python 3.9 or newer and has no dependencies. If a file with the same name already exists, it is saved as `.bak-<date>` first. The installer's prompts are in Portuguese, so its confirmation message appears in Portuguese, and its review role is named `revisor`. The plugin is fully in English.
 
-Para deixar sempre ligado, cole o texto de `comandos/economico.md` no arquivo de instruções globais da ferramenta (`CLAUDE.md` ou `AGENTS.md`), sem a última linha.
+To keep the mode always on, paste the text of `comandos/economico.md`, minus its last line, into your tool's global instructions file (`CLAUDE.md` or `AGENTS.md`).
 
-## Trocar os modelos
+## Change the models
 
-Só o `modelos.ini` muda. Edite e rode o instalador de novo:
+This applies to the installer. Only `modelos.ini` changes (*esforco* means reasoning effort). Edit it and run the installer again:
 
 ```ini
 [claude]
@@ -68,30 +94,30 @@ esforco_revisor =
 esforco_search =
 ```
 
-Vazio significa usar o mesmo modelo da conversa principal. Os padrões de `[claude]` gastam bastante, porque foram pensados para o plano Max. No Claude Pro ou na API, comece pelo exemplo acima. Evite trocar o modelo da conversa principal no meio do trabalho: o cache é por modelo e a troca reprocessa o contexto inteiro.
+Empty means the role uses the same model as the main conversation. The default `[claude]` section of the installer uses `opus` at maximum effort, which is meant for the Max plan. On Claude Pro or the API, start with the example above. Avoid switching the main conversation's model mid-task: the cache is per model, and switching reprocesses the entire context.
 
-## Usar com IA local e outros modelos
+## Use local and other models
 
 | | OpenCode | Claude Code | Codex |
 |---|---|---|---|
-| Modelo diferente por papel | Sim | Sim | Sim |
-| Nuvem e local na mesma sessão | **Sim** | Não, um endpoint por sessão (só com um roteador na frente) | Não, um provedor por sessão |
-| Modelo local | Nativo | Via Ollama, sem suporte oficial da Anthropic | Nativo, com `--oss` |
-| Papel só leitura | Edição negada | Sem ferramentas de edição | Só por instrução |
+| Different model per role | Yes | Yes | Yes |
+| Cloud and local in the same session | **Yes** | No, one endpoint per session (only with a router in front) | No, one provider per session |
+| Local model | Native | Via Ollama, not officially supported by Anthropic | Native, with `--oss` |
+| Read-only role | Edits denied | No edit tools | By instruction only |
 
-Quem quer misturar, com a conversa na nuvem e os executores no PC, deve usar o **OpenCode**. Nos papéis só leitura o terminal continua liberado, para rodar `git diff` e testes, então ali a garantia é a instrução.
+To mix them, with the conversation in the cloud and the executors on your machine, use **OpenCode**. Read-only roles keep the terminal so they can run `git diff` and tests, so the guarantee there is the instruction.
 
-**Antes de escolher o modelo local:**
+**Before choosing a local model:**
 
-- Ele precisa ter suporte a *tool calling*.
-- Use pelo menos **64k de contexto**. O padrão do Ollama pode ser só 4k: `OLLAMA_CONTEXT_LENGTH=64000 ollama serve`.
-- Com uma GPU só, use o mesmo modelo em todos os papéis ou modelos que caibam juntos na VRAM. Se não couberem, o Ollama descarrega um para carregar o outro a cada delegação.
-- `OLLAMA_NUM_PARALLEL` vem em 1, então executores "em paralelo" entram em fila. Aumentar consome mais memória, porque ela escala com `NUM_PARALLEL × CONTEXT_LENGTH`.
+- It must support *tool calling*.
+- Use at least **64k of context**. Ollama's default may be only 4k: `OLLAMA_CONTEXT_LENGTH=64000 ollama serve`.
+- With one GPU, use the same model for every role or models that fit in VRAM together. Otherwise Ollama unloads one to load the other on every delegation.
+- `OLLAMA_NUM_PARALLEL` defaults to 1, so "parallel" executors queue up. Raising it uses more memory, which scales with `NUM_PARALLEL × CONTEXT_LENGTH`.
 
 <details>
-<summary><strong>OpenCode com Ollama</strong></summary>
+<summary><strong>OpenCode with Ollama</strong></summary>
 
-Em `~/.config/opencode/opencode.json`:
+In `~/.config/opencode/opencode.json`:
 
 ```json
 {
@@ -107,7 +133,7 @@ Em `~/.config/opencode/opencode.json`:
 }
 ```
 
-No `modelos.ini` (para LM Studio, a porta é `1234` e o prefixo é o nome que você der ao provedor):
+In `modelos.ini` (for LM Studio, the port is `1234` and the prefix is whatever you name the provider):
 
 ```ini
 [opencode]
@@ -116,14 +142,14 @@ revisor = ollama/qwen3.5
 search = ollama/qwen3.5
 ```
 
-Depois: `python instalar.py opencode`. A conversa principal continua no modelo que você selecionar, na nuvem ou local.
+Then: `python instalar.py opencode`. The main conversation stays on whichever model you select, cloud or local.
 
 </details>
 
 <details>
-<summary><strong>Claude Code com Ollama</strong></summary>
+<summary><strong>Claude Code with Ollama</strong></summary>
 
-Coloque os nomes do Ollama no `modelos.ini` e deixe o esforço vazio:
+Put the Ollama names in `modelos.ini` and leave effort empty:
 
 ```ini
 [claude]
@@ -135,62 +161,64 @@ esforco_revisor =
 esforco_search =
 ```
 
-Depois:
+Then:
 
 ```bash
 python instalar.py claude
 ollama launch claude --model qwen3.5
 ```
 
-Para outro servidor compatível com a API da Anthropic, defina `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` e `ANTHROPIC_DEFAULT_HAIKU_MODEL`, que o Claude Code usa em tarefas de fundo. A Anthropic não dá suporte a modelos que não sejam Claude. Quem documenta este caminho é o Ollama.
+For another server compatible with the Anthropic API, set `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and `ANTHROPIC_DEFAULT_HAIKU_MODEL`, which Claude Code uses for background tasks. Anthropic does not support non-Claude models. Ollama documents this path.
 
 </details>
 
 <details>
-<summary><strong>Codex com modelo local</strong></summary>
+<summary><strong>Codex with a local model</strong></summary>
 
 ```bash
 python instalar.py codex
 codex --oss --local-provider ollama -m gpt-oss:120b
 ```
 
-Também funciona com `ollama launch codex`. Os papéis podem usar modelos diferentes, sempre no provedor da sessão.
+`ollama launch codex` also works. Roles can use different models, always on the session's provider.
 
 </details>
 
-**Outra ferramenta?** Os papéis são Markdown puro. Peça para a sua IA: "leia `papeis/` e `comandos/` e crie o equivalente na minha ferramenta". Ou escreva um adaptador em `instalar.py`: uma função que devolve `destino → conteúdo`, registrada em `ADAPTADORES`, mais uma seção no `modelos.ini`.
+**Another tool?** The roles are plain Markdown. Ask your AI: "read `papeis/` and `comandos/` and create the equivalent for my tool". Or write an adapter in `instalar.py`: a function that returns `destination → content`, registered in `ADAPTADORES`, plus a section in `modelos.ini`.
 
-## Personalizar
+## Customize
 
 ```text
 modo-economico/
-├── modelos.ini        qual modelo faz cada papel
-├── papeis/            o que cada subagente é e como responde
-├── comandos/          o texto que liga e desliga o modo
-├── instalar.py        traduz tudo para o formato de cada ferramenta
-└── test_instalar.py   python -m unittest
+├── plugin/            the Claude Code plugin, in English
+├── modelos.ini        which model does each role
+├── papeis/            what each subagent is and how it answers
+├── comandos/          the text that turns the mode on and off
+├── instalar.py        translates it all into each tool's format
+└── test_*.py          python -m unittest
 ```
 
-Mudou o texto de um papel ou comando? Rode o instalador de novo. Para criar um papel, adicione um arquivo em `papeis/`, uma linha em cada seção do `modelos.ini` e cite o nome em `comandos/economico.md`.
+Changed a role or command? Run the installer again. To add a role, add a file in `papeis/`, a line in each section of `modelos.ini`, and mention its name in `comandos/economico.md`. The plugin is a separate translation, so change it in `plugin/` too.
 
-Para remover, apague os arquivos que o instalador listou:
+To remove what the installer added, delete the files it listed:
 
-| Ferramenta | Arquivos |
+| Tool | Files |
 |---|---|
-| Claude Code | `~/.claude/agents/{executor,revisor,search}.md` e `~/.claude/commands/{economico,normal}.md` |
-| OpenCode | `~/.config/opencode/agents/{executor,revisor,search}.md` e `~/.config/opencode/commands/{economico,normal}.md` |
-| Codex | `~/.codex/agents/{executor,revisor,search}.toml` e `~/.agents/skills/{economico,normal}/` |
+| Claude Code | `~/.claude/agents/{executor,revisor,search}.md` and `~/.claude/commands/{economico,normal}.md` |
+| OpenCode | `~/.config/opencode/agents/{executor,revisor,search}.md` and `~/.config/opencode/commands/{economico,normal}.md` |
+| Codex | `~/.codex/agents/{executor,revisor,search}.toml` and `~/.agents/skills/{economico,normal}/` |
 
-## O que foi testado
+## What was tested
 
-| Ferramenta | Versão | Conferido |
+| Tool | Version | Checked |
 |---|---|---|
-| Claude Code | 2.1.319 | Comando carregado; cada papel chega ao modelo configurado; papéis só leitura sem ferramenta de edição |
-| OpenCode | 1.19.5 | Comando carregado; conversa e executor em provedores diferentes na mesma sessão; edição negada |
-| Codex | 0.167.0 | Agentes e comando carregados; a delegação em si não foi exercitada |
+| Claude Code plugin | 2.1.319 | Installed into a clean config; command loaded; `executor` on `sonnet` with the conversation on `opus`; `search` on `haiku` with no edit tools |
+| Claude Code installer | 2.1.319 | Command loaded; each role reaches its configured model; read-only roles have no edit tools |
+| OpenCode | 1.19.5 | Command loaded; conversation and executor on different providers in the same session; edits denied |
+| Codex | 0.167.0 | Agents and command loaded; delegation itself was not exercised |
 
-Os testes usaram um servidor falso que registra o modelo pedido em cada chamada. Nenhum modelo local real foi rodado, então velocidade e qualidade dependem do modelo que você escolher.
+The tests used a fake server that records the model requested in each call. No real local model was run, so speed and quality depend on the model you choose.
 
-## Licença
+## License
 
-MIT. Pode copiar, mudar e redistribuir.
+MIT. Copy it, change it, redistribute it.

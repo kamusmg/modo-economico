@@ -1,0 +1,12 @@
+{
+  "name": "modo-economico",
+  "owner": { "name": "kamusmg" },
+  "description": "Economy mode for Claude Code: the main conversation decides, subagents execute.",
+  "plugins": [
+    {
+      "name": "modo-economico",
+      "source": "./plugin",
+      "description": "One conversation decides, the others execute. Keeps your main Claude Code context clean by delegating search and mechanical work to subagents."
+    }
+  ]
+}

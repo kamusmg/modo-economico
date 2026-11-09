@@ -1,0 +1,10 @@
+{
+  "name": "modo-economico",
+  "displayName": "Modo Econômico",
+  "description": "One conversation decides, the others execute. Keeps your main Claude Code context clean by delegating search and mechanical work to subagents.",
+  "author": { "name": "kamusmg", "url": "https://github.com/kamusmg" },
+  "homepage": "https://github.com/kamusmg/modo-economico",
+  "repository": "https://github.com/kamusmg/modo-economico",
+  "license": "MIT",
+  "keywords": ["subagents", "context", "delegation", "workflow"]
+}
